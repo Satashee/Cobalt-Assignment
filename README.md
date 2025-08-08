@@ -40,7 +40,7 @@ A simple full-stack app that lets users connect their Slack workspace, send mess
    - [Vite Proxy Configuration](#vite-proxy-configuration)
 8. [Usage](#usage)
 9. [Next Steps](#next-steps)
-
+10. [Challenges & Learning](#challenges&learning)
 ---
 
 ## Features
@@ -298,6 +298,91 @@ This lets your React app call `/slack/*` without CORS.
 - Enhance UI styling, add user feedback & error handling.
 - Add pagination, sorting, filtering on the frontend.
 
+  
+
+
+## Challenges & Learning
+
+1. **OAuth 2.0 Flow & Scopes**
+
+   * Grasping the two-step redirect → callback flow, and why you need both **bot** and **user** scopes (e.g. `chat:write` vs. `users:read`).
+   * Making sure your app requests exactly the permissions it needs, in the right place (`scope` vs. `user_scope`), to avoid `invalid_scope` errors.
+
+2. **Token Management & Refresh**
+
+   * Securely storing access + refresh tokens (and knowing which belongs to the bot vs. the authed user).
+   * Architecting an automated “refresh when expired” routine so your service never silently fails once an access token times out.
+
+3. **Slack API Edge-Cases**
+
+   * Handling errors like `not_in_channel` (and auto-joining) or `channel_not_found` (private vs. public channels).
+   * Deciding between `auth.test` vs. `users.info` to retrieve a human-readable username.
+
+4. **Reliable Scheduling**
+
+   * Building a durable scheduler loop that’ll pick up jobs even if the process restarts.
+   * Choosing a persistence layer (JSON files locally vs. Redis/KV in prod), and avoiding race conditions when multiple jobs fire at once.
+
+5. **Cross-Origin & Session Cookies**
+
+   * Configuring CORS, `sameSite`, `secure` flags so that your React frontend can carry `connect.sid` to the Express backend.
+   * Wiring Vite’s proxy (dev) and Vercel rewrites (prod) so that `/slack/*` calls “just work” without the browser blocking your cookie.
+
+---
+
+## 🏗 Architectural Preview
+
+```text
+┌────────────────────────────┐
+│  React + Vite Frontend     │
+│                            │
+│  • Connect page (OAuth)    │
+│  • Send page               │
+│  • Schedule page           │
+│  • useChannels() hook      │
+│  • axios.defaults.baseURL  │
+└─────────────┬──────────────┘
+              │  HTTP (withCredentials)
+              ▼
+┌────────────────────────────┐
+│   Express.js Backend       │
+│                            │
+│  • /slack/oauth/authorize  │
+│  • /slack/oauth/callback   │
+│  • /slack/conversations/…  │
+│  • /slack/message/send     │
+│  • /slack/message/schedule │
+│  • /slack/message/schedules│
+│  • /slack/message/schedule/:id (DELETE)
+│  • /slack/user             │
+│                            │
+│  • Session store (JSON or │
+│    Redis/KV)               │
+│  • fileUtils (load/save)   │
+│  • tokenService (refresh)  │
+│  • slackService (callSlack)│
+└─────────────┬──────────────┘
+              │
+              │ Local JSON files
+              │ (tokens.json, schedules.json, sent.json)
+              │  —or—  KV/Redis in prod
+              ▼
+┌────────────────────────────┐
+│   Scheduler Loop (setInterval every minute) │
+│                                            │
+│  • listUsers()                             │
+│  • loadSchedules(user)                     │
+│  • refreshAccessToken(user) if needed      │
+│  • callSlack("chat.postMessage", ...)      │
+│  • saveSchedules(user)                     │
+└────────────────────────────┘
 ```
-::contentReference[oaicite:0]{index=0}
-```
+
+* **Frontend** proxies `/slack/*` through Vite (dev) or Vercel rewrites (prod) so the browser always talks “first-party” to `https://your-app.vercel.app`.
+* **Backend** glues together **Slack’s Web API**, **token/schedule persistence**, and a **mini-scheduler**.
+* **Persistence** starts as simple JSON files locally, then swaps out for Redis/KV when you scale to production.
+
+
+
+
+
