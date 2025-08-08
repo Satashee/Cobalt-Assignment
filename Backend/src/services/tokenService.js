@@ -3,8 +3,6 @@ const axios = require("axios");
 const { loadTokens, saveTokens } = require("../utils/fileUtils");
 
 /**
- * Uses the refresh_token in tokens.json to get a new access_token.
- * Saves the updated tokens back to tokens.json.
  * @returns {Promise<string>} the fresh access_token
  */
 async function refreshAccessToken() {
@@ -21,7 +19,6 @@ async function refreshAccessToken() {
   if (!data.ok) {
     throw new Error(`Refresh failed: ${data.error}`);
   }
-  // merge in the new tokens
   const updated = {
     ...loadTokens(),
     access_token: data.access_token,

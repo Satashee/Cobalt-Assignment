@@ -7,7 +7,6 @@ const { callSlack } = require("../services/tokenService");
 module.exports = async function getOauthCallback(req, res) {
   const code = req.query.code;
   try {
-    // Exchange the code for tokens
     const { data } = await axios.get("https://slack.com/api/oauth.v2.access", {
       params: {
         client_id: process.env.SLACK_CLIENT_ID,
@@ -21,8 +20,6 @@ module.exports = async function getOauthCallback(req, res) {
     }
 
     const access = data.access_token;
-
-    // Auto-join #general
     const convs = await callSlack(
       "conversations.list",
       { types: "public_channel", limit: 1000 },
@@ -38,8 +35,6 @@ module.exports = async function getOauthCallback(req, res) {
         }
       }
     }
-
-    // Persist tokens
     const tokenPayload = {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -58,7 +53,6 @@ module.exports = async function getOauthCallback(req, res) {
       saved_at: Date.now(),
     };
 
-    // write into your tokens.json
     fs.writeFileSync(
       path.resolve(__dirname, "../../tokens.json"),
       JSON.stringify(tokenPayload, null, 2)

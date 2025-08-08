@@ -8,7 +8,6 @@ const { refreshAccessToken, callSlack } = require("../services/tokenService");
 
 module.exports = async function postSendHandler(req, res) {
   try {
-    // 1) ensure bot token is fresh
     let { access_token, expires_in, saved_at } = loadTokens();
     const age = Math.floor((Date.now() - (saved_at || 0)) / 1000);
     if (age > expires_in - 60) {
@@ -20,7 +19,6 @@ module.exports = async function postSendHandler(req, res) {
     const { channel, text } = req.body;
     let ts;
 
-    // 2) try postMessage
     try {
       const data = await callSlack(
         "chat.postMessage",
@@ -42,7 +40,6 @@ module.exports = async function postSendHandler(req, res) {
       }
     }
 
-    // 3) record the sent message
     const sent = loadSent();
     const id = Date.now().toString();
     sent.push({ id, channel, text, ts, sent_at: new Date().toISOString() });

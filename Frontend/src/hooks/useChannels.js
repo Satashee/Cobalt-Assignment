@@ -9,7 +9,6 @@ export default function useChannels() {
     axios
       .get("/slack/conversations/list")
       .then((res) => {
-        // res.data is an array of { id, name }
         setChannels(res.data.map((c) => ({ id: c.id, name: c.name })));
       })
       .catch(console.error)

@@ -2,7 +2,6 @@ const { loadSchedules, saveSchedules } = require("../utils/fileUtils");
 
 /**
  * POST /slack/message/schedule
- * Body: { channel: string, text: string, send_at: string (ISO datetime) }
  */
 module.exports = function postScheduleHandler(req, res) {
   const { channel, text, send_at } = req.body;

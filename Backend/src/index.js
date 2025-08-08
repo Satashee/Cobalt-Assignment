@@ -17,12 +17,10 @@ app.use(express.json());
 getRoutes(app);
 postRoutes(app);
 
-// Existing root endpoint
 app.get("/", (_req, res) => {
   res.send("🚀 Slack Connect Backend (JS) is up!");
 });
 
-// 🔄 Simple in-memory scheduler loop
 setInterval(async () => {
   try {
     const schedules = loadSchedules();
@@ -56,7 +54,7 @@ setInterval(async () => {
         job.ts = resp.ts;
       } catch (err) {
         console.error(`Failed to send scheduled ${job.id}:`, err.error || err);
-        // optionally mark as 'failed' or leave as pending to retry
+        // optionally mark as 'failed' 
         job.status = "failed";
         job.error = err.error || err.message;
       }

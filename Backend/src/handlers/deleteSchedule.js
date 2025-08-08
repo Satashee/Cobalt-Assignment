@@ -1,8 +1,7 @@
 const { loadSchedules, saveSchedules } = require("../utils/fileUtils");
 
-/**
+/*
  * DELETE /slack/message/schedule/:id
- * Marks a pending scheduled message as "cancelled"
  */
 module.exports = function deleteScheduleHandler(req, res) {
   const schedules = loadSchedules();

@@ -14,7 +14,6 @@ export default function Schedule() {
   const [status, setStatus] = useState(null);
   const [page, setPage] = useState(1);
 
-  // load existing schedules
   useEffect(() => {
     axios
       .get("/slack/message/schedules")
@@ -45,7 +44,6 @@ export default function Schedule() {
 
   if (loading) return <p>Loading channels…</p>;
 
-  // sort earliest first
   const sorted = [...schedules].sort(
     (a, b) => new Date(a.send_at) - new Date(b.send_at)
   );

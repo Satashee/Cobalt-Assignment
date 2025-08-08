@@ -6,8 +6,6 @@ const { refreshAccessToken, callSlack } = require("../services/tokenService");
 module.exports = async function getUserHandler(_req, res) {
   try {
     const tokens = loadTokens();
-
-    // 1) If we have a user token, try auth.test
     const userCreds = tokens.authed_user;
     if (userCreds?.access_token) {
       const authResp = await axios.post(
@@ -23,11 +21,8 @@ module.exports = async function getUserHandler(_req, res) {
       }
       console.warn("auth.test failed:", authResp.data.error);
     }
-
-    // 2) Fallback: use bot token + users.info
     const userId = tokens.authed_user?.id;
     if (userId) {
-      // refresh bot token if expired
       let { access_token, expires_in, saved_at } = tokens;
       const age = Math.floor((Date.now() - (saved_at || 0)) / 1000);
       if (age > expires_in - 60) {
@@ -50,8 +45,6 @@ module.exports = async function getUserHandler(_req, res) {
         },
       });
     }
-
-    // 3) Not connected
     return res.json({ connected: false });
   } catch (err) {
     console.error("Error in getUserHandler:", err);

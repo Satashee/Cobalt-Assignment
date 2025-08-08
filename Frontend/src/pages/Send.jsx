@@ -13,7 +13,6 @@ export default function Send() {
   const [sentList, setSentList] = useState([]);
   const [page, setPage] = useState(1);
 
-  // load past sends
   useEffect(() => {
     axios
       .get("/slack/message/sent")
@@ -39,7 +38,6 @@ export default function Send() {
 
   if (loading) return <p>Loading channels…</p>;
 
-  // sort earliest first
   const sorted = [...sentList].sort(
     (a, b) => new Date(a.sent_at) - new Date(b.sent_at)
   );
